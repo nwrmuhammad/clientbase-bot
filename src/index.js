@@ -1,6 +1,7 @@
 require('dotenv').config();
 const { Telegraf, Markup } = require('telegraf');
 const fs = require('fs');
+const accessMiddleware = require('./middleware/access_admin');
 
 const bot = new Telegraf(process.env.TOKEN);
 
@@ -22,7 +23,10 @@ function saveCustomer(customer) {
     fs.writeFileSync('customers.json', JSON.stringify(customers, null, 2));
 }
 
+bot.use(accessMiddleware)
+
 bot.start((ctx) => {
+    console.log(ctx.from.id);
     ctx.reply(
         "Mijozlar ro`yxatini olish va ularga xabar yuborish , faqat so`kilmasin 👊🏻",
         Markup.keyboard([
