@@ -4,9 +4,9 @@ const fs = require('fs');
 
 const bot = new Telegraf(process.env.TOKEN);
 
-let sessions = {}; // store temporary data before saving
+let sessions = {}; 
 
-// Function to load customers.json if exists
+
 function loadCustomers() {
     if (fs.existsSync('customers.json')) {
         return JSON.parse(fs.readFileSync('customers.json', 'utf8'));
@@ -14,77 +14,92 @@ function loadCustomers() {
     return [];
 }
 
-// Function to save customers.json
+
+
 function saveCustomer(customer) {
     let customers = loadCustomers();
     customers.push(customer);
     fs.writeFileSync('customers.json', JSON.stringify(customers, null, 2));
 }
 
-// Start command
 bot.start((ctx) => {
-    ctx.reply('Welcome! Please send me your name.');
-    sessions[ctx.chat.id] = {};
-    
+    ctx.reply(
+        "Mijozlar ro`yxatini olish va ularga xabar yuborish , faqat so`kilmasin 👊🏻",
+        Markup.keyboard([
+            ["➕ Add Customer", "📋 List of Customers"]
+        ]).resize()
+    );
+});
+
+// Tugmalar ishlashi
+bot.hears("➕ Add Customer", (ctx) => {
+    let id = ctx.chat.id;
+    sessions[id] = { step: "get_name" };
+    ctx.reply("Ismingizni kiriting:");
 });
 
 
-// Handle text messages
-bot.on('text', (ctx) => {
-    let id = ctx.chat.id;
-    if (!sessions[id]) sessions[id] = {};
+bot.hears("📋 List of Customers", (ctx) => {
+    let customers = loadCustomers();
 
-    if (!sessions[id].name) {
-        sessions[id].name = ctx.message.text;
+    if (!customers || customers.length === 0) {
+        return ctx.reply("📭 Hozircha mijozlar yo‘q.");
+    }
+
+    let text = "📋 Mijozlar ro‘yxati:\n\n";
+    customers.forEach((c, i) => {
+        text += `${i + 1}) \n <b>Ismi:</b> <i>${c.name}</i>, \n <b>Raqami:</b> <i>${c.phone || "📞 yo‘q"}</i>, \n <b>Nima sotib olgan:</b> <i>${c.purchased_item || "📦 yo‘q"}</i> \n`;
+    });
+
+    ctx.reply(text , { parse_mode: "HTML" });
+});
+
+bot.on("text", (ctx) => {
+    let id = ctx.chat.id;
+    let session = sessions[id];
+
+    if (!session) return "/start bosing"
+
+    if (session.step === "get_name") {
+        session.name = ctx.message.text;
+        session.step = "get_item";
+        ctx.reply("Xarid qilgan mahsulotingizni kiriting:");
+    } 
+    else if (session.step === "get_item") {
+        session.purchased_item = ctx.message.text;
+        session.step = "get_date";
+        ctx.reply("Qachon xarid qilgan: Misol uchun 2023-29-01");
+       
+    } 
+    else if (session.step === "get_date") {
+        session.date = ctx.message.text;
+        session.step = "get_contact";
+        ctx.reply("Mijozning telefon raqamini yuboring")
+       
+    }
+    else if (session.step === "get_contact") {
+        session.contact = ctx.message.text;
+
+         let customers = {
+            name: session.name,
+            phone: session.contact,
+            date: session.date,
+            purchased_item: session.purchased_item
+        }
+        saveCustomer(customers)
+
         ctx.reply(
-            'Got it! Now please share your phone number:',
+            `✅ Rahmat, ${session.name} okamzani! Ma'lumotlari saqlandi.`,
             Markup.keyboard([
-                Markup.button.contactRequest('📱 Share my phone number')
+                ["➕ Add Customer", "📋 List of Customers"]
             ]).resize()
         );
-    }
-    console.log(ctx);
-});
-
-bot.on('contact', (ctx) => {
-    let id = ctx.chat.id;
-    if (!sessions[id] || !sessions[id].name) {
-        return ctx.reply('Please start by sending your name.');
-    }
-
-    let phone = ctx.message.contact.phone_number;
-    let customers = loadCustomers();
-
-    // Telefon raqami oldin mavjudligini tekshirish
-    let exists = customers.some(c => c.phone === phone);
-
-    if (exists) {
-        ctx.reply('❌ Bu telefon raqami allaqachon ro‘yxatda mavjud.');
         delete sessions[id];
-        return;
     }
 
-    // Yangi mijoz yaratish
-    let customer = {
-        name: sessions[id].name,
-        phone: phone
-    };
-
-    saveCustomer(customer);
-
-    ctx.reply(`✅ Thank you, ${customer.name}! Your data has been saved.`);
-    delete sessions[id];
 });
-// Command to view all customers (for admin only)
-bot.command('list', (ctx) => {
-    let customers = loadCustomers();
-    if (customers.length === 0) {
-        ctx.reply('No customers saved yet.');
-    } else {
-        let msg = customers.map((c, i) => `${i + 1}. ${c.name} - ${c.phone}`).join('\n');
-        ctx.reply(`📋 Customer List:\n${msg}`);
-    }
-});
+
+
 
 
 bot.launch();
