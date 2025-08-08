@@ -26,20 +26,20 @@ bot.start((ctx) => {
     ctx.reply(
         "Mijozlar ro`yxatini olish va ularga xabar yuborish , faqat so`kilmasin 👊🏻",
         Markup.keyboard([
-            ["➕ Add Customer", "📋 List of Customers"]
+            ["➕ Mijoz qo`shish", "📋 Mizolar ro`yxati"]
         ]).resize()
     );
 });
 
 // Tugmalar ishlashi
-bot.hears("➕ Add Customer", (ctx) => {
+bot.hears("➕ Mijoz qo`shish", (ctx) => {
     let id = ctx.chat.id;
     sessions[id] = { step: "get_name" };
-    ctx.reply("Ismingizni kiriting:");
+    ctx.reply("Mijoz ismini kiriting:");
 });
 
 
-bot.hears("📋 List of Customers", (ctx) => {
+bot.hears("📋 Mizolar ro`yxati", (ctx) => {
     let customers = loadCustomers();
 
     if (!customers || customers.length === 0) {
@@ -63,12 +63,12 @@ bot.on("text", (ctx) => {
     if (session.step === "get_name") {
         session.name = ctx.message.text;
         session.step = "get_item";
-        ctx.reply("Xarid qilgan mahsulotingizni kiriting:");
+        ctx.reply("Xarid qilingan mahsulotni kiriting:");
     } 
     else if (session.step === "get_item") {
         session.purchased_item = ctx.message.text;
         session.step = "get_date";
-        ctx.reply("Qachon xarid qilgan: Misol uchun 2023-29-01");
+        ctx.reply("Qachon xarid qilingan: Misol uchun 2023-29-01");
        
     } 
     else if (session.step === "get_date") {
