@@ -26,7 +26,7 @@ bot.start((ctx) => {
     ctx.reply(
         "Mijozlar ro`yxatini olish va ularga xabar yuborish , faqat so`kilmasin 👊🏻",
         Markup.keyboard([
-            ["➕ Mijoz qo`shish", "📋 Mizolar ro`yxati"]
+            ["➕ Mijoz qo`shish", "📋 Mijozlar ro`yxati"]
         ]).resize()
     );
 });
@@ -39,7 +39,7 @@ bot.hears("➕ Mijoz qo`shish", (ctx) => {
 });
 
 
-bot.hears("📋 Mizolar ro`yxati", (ctx) => {
+bot.hears("📋 Mijozlar ro`yxati", (ctx) => {
     let customers = loadCustomers();
 
     if (!customers || customers.length === 0) {
