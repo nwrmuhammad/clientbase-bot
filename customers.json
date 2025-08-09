@@ -70,5 +70,11 @@
     "phone": "s",
     "date": "s",
     "purchased_item": "s"
+  },
+  {
+    "name": "sherozbek",
+    "phone": "21",
+    "date": "21",
+    "purchased_item": "12"
   }
 ]
