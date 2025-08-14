@@ -2,6 +2,9 @@ const admins = ["8025873679", "1118457274", "7220439451"];
 
 function accessMiddleware(ctx, next) {
   if (!admins.includes(String(ctx.chat.id))) {
+    console.log(
+      `Foydalanishga urinish: use: ${ctx.chat.username} , id: ${ctx.chat.id}`
+    );
     ctx.reply("❌ Siz botdan foydalanish huquqiga ega emassiz.", {
       reply_markup: { remove_keyboard: true },
     });
